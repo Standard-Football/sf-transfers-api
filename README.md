@@ -62,20 +62,29 @@ Liveness probe. Returns `200` with the configured upstream URL.
 
 ```bash
 npm install
-npx vercel dev
+npm run dev
 ```
 
-The dev server runs on `http://localhost:3000`. Test with:
+This starts a standalone Node http server on `http://localhost:3000`
+(via `tsx`, no Vercel CLI required). Test with:
 
 ```bash
 curl http://localhost:3000/api/players/atzboo800gv7gic2rgvgo0kq1/transfers
 ```
 
-## Deploy
+The standalone server (`server.ts`) and the Vercel function handlers
+(`api/*.ts`) share the same `lib/` helpers, so behaviour is identical
+in dev and prod.
 
-Connect the repo to Vercel (auto-detected as a serverless functions
-project). No env vars are required for the production upstream — set
-`UPSTREAM_URL` only if pointing to a staging proxy.
+If you want to run the project the way Vercel will execute it (full
+serverless emulation, edge cache, etc.), install the Vercel CLI and
+use `npm run dev:vercel` instead.
+
+## Deploy (Vercel)
+
+Connect the repo to Vercel — it auto-detects the `api/` folder as
+serverless functions. No env vars are required for the production
+upstream; set `UPSTREAM_URL` only if pointing to a staging proxy.
 
 ## CORS
 
