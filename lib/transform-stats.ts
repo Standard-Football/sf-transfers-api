@@ -11,6 +11,7 @@ export interface AdvancedStats {
   season: string
   league: string
   league_id: number | null
+  league_image: string | null
   team_id: number | null
   minutesPlayed: number
   appearances: number
@@ -79,6 +80,7 @@ function buildFromRecord(record: RawStatRecord): AdvancedStats {
     season: record.info.season?.name ?? '',
     league: record.info.season?.league?.name ?? '',
     league_id: record.info.season?.league?.id ?? null,
+    league_image: record.info.season?.league?.image_path ?? null,
     team_id: record.info.team_id ?? null,
     minutesPlayed: get('minutes-played'),
     appearances: get('appearances'),
