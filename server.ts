@@ -7,10 +7,13 @@
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http'
 import { fetchTransfersFromUpstream } from './lib/upstream.js'
 import { transformTransfers } from './lib/transform.js'
+import { fetchStatsFromUpstream } from './lib/upstream-stats.js'
+import { transformStats } from './lib/transform-stats.js'
 
 const PORT = process.env.PORT ? Number(process.env.PORT) : 3000
 
 const TRANSFERS_PATH = /^\/api\/players\/([^/]+)\/transfers\/?$/
+const STATS_PATH = /^\/api\/players\/([^/]+)\/stats\/?$/
 
 function sendJson(res: ServerResponse, status: number, body: unknown) {
   res.writeHead(status, {
@@ -39,9 +42,9 @@ async function route(req: IncomingMessage, res: ServerResponse) {
     return
   }
 
-  const match = url.match(TRANSFERS_PATH)
-  if (req.method === 'GET' && match) {
-    const playerId = decodeURIComponent(match[1])
+  const transfersMatch = url.match(TRANSFERS_PATH)
+  if (req.method === 'GET' && transfersMatch) {
+    const playerId = decodeURIComponent(transfersMatch[1])
     try {
       const records = await fetchTransfersFromUpstream(playerId)
       const transfers = transformTransfers(records)
@@ -49,6 +52,24 @@ async function route(req: IncomingMessage, res: ServerResponse) {
         player_id: playerId,
         count: transfers.length,
         data: transfers,
+      })
+    } catch (err) {
+      const detail = err instanceof Error ? err.message : 'unknown_error'
+      sendJson(res, 502, { error: 'upstream_failed', detail })
+    }
+    return
+  }
+
+  const statsMatch = url.match(STATS_PATH)
+  if (req.method === 'GET' && statsMatch) {
+    const playerId = decodeURIComponent(statsMatch[1])
+    try {
+      const records = await fetchStatsFromUpstream(playerId)
+      const seasons = transformStats(records)
+      sendJson(res, 200, {
+        player_id: playerId,
+        count: seasons.length,
+        seasons,
       })
     } catch (err) {
       const detail = err instanceof Error ? err.message : 'unknown_error'
